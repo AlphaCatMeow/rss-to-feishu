@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RSS飞书推送配置</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; }
+        input { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #message { margin-top: 1rem; padding: 1rem; border-radius: 4px; display: none; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>RSS飞书推送配置</h1>
+    <form id="configForm">
+        <div class="form-group">
+            <label for="rss_url">RSS地址：</label>
+            <input type="url" id="rss_url" required>
+        </div>
+        <div class="form-group">
+            <label for="interval">推送间隔（分钟）：</label>
+            <input type="number" id="interval" min="1" value="60" required>
+        </div>
+        <div class="form-group">
+            <label for="webhook_url">飞书Webhook地址：</label>
+            <input type="url" id="webhook_url" required>
+        </div>
+        <button type="submit">保存配置</button>
+    </form>
+    <div id="message"></div>
+
+    <script>
+        document.getElementById('configForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const payload = {
+                rss_url: document.getElementById('rss_url').value,
+                interval: document.getElementById('interval').value,
+                webhook_url: document.getElementById('webhook_url').value
+            };
+
+            try {
+                const response = await fetch('/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const messageEl = document.getElementById('message');
+                
+                if (response.ok) {
+                    messageEl.className = 'success';
+                    messageEl.textContent = `配置成功：${result.message}`;
+                } else {
+                    messageEl.className = 'error';
+                    messageEl.textContent = `错误：${result.error || '未知错误'}`;
+                }
+                messageEl.style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+                const messageEl = document.getElementById('message');
+                messageEl.className = 'error';
+                messageEl.textContent = '网络请求失败，请检查服务器状态';
+                messageEl.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
