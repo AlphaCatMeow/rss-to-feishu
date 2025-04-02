@@ -1,76 +1,580 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RSS飞书推送配置</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.5rem; }
-        input { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; }
-        button { background: #007bff; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        #message { margin-top: 1rem; padding: 1rem; border-radius: 4px; display: none; }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
+        :root {
+            --primary-color: #1677ff;
+            --primary-hover: #0958d9;
+            --background-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-color: #eaeaea;
+            --success-color: #52c41a;
+            --error-color: #ff4d4f;
+        }
+        
+        body { 
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--background-color);
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 30px;
+            margin: 30px auto;
+            transition: all 0.3s ease;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.8rem;
+        }
+        
+        .section-title {
+            margin: 30px 0 20px;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            font-size: 1.3rem;
+        }
+        
+        .section-title i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+        
+        .source-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 18px;
+            position: relative;
+            transition: all 0.2s ease;
+            background-color: #fafafa;
+        }
+        
+        .source-item:hover {
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            border-color: #d9d9d9;
+        }
+        
+        .source-item .delete-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            cursor: pointer;
+            color: var(--error-color);
+            font-size: 1.2rem;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        
+        .source-item .delete-btn:hover {
+            opacity: 1;
+        }
+        
+        .source-actions {
+            margin: 25px 0 30px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 8px 16px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        
+        .empty-state {
+            padding: 30px;
+            text-align: center;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            color: #888;
+        }
+        
+        .empty-state i {
+            font-size: 2rem;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(22, 119, 255, 0.15);
+        }
+        
+        .alert {
+            border-radius: 8px;
+            margin-top: 20px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .fade-transition {
+            transition: opacity 0.3s ease;
+        }
+        
+        .source-item h5 {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #444;
+        }
+        
+        .btn-action-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+        
+        .save-config-container {
+            margin-top: 35px;
+        }
+        
+        .save-config-btn {
+            padding: 10px 0;
+            font-weight: 500;
+        }
+        
+        .tooltip-icon {
+            margin-left: 5px;
+            color: #aaa;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <h1>RSS飞书推送配置</h1>
-    <form id="configForm">
-        <div class="form-group">
-            <label for="rss_url">RSS地址：</label>
-            <input type="url" id="rss_url" required>
+    <div class="container">
+        <div class="header">
+            <h1>RSS飞书推送配置</h1>
         </div>
-        <div class="form-group">
-            <label for="interval">推送间隔（分钟）：</label>
-            <input type="number" id="interval" min="1" value="60" required>
-        </div>
-        <div class="form-group">
-            <label for="webhook_url">飞书Webhook地址：</label>
-            <input type="url" id="webhook_url" required>
-        </div>
-        <button type="submit">保存配置</button>
-    </form>
-    <div id="message"></div>
 
+        <div class="alert alert-success fade-transition" id="message" style="display: none;">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span id="message-content"></span>
+        </div>
+        <div class="alert alert-danger fade-transition" id="error" style="display: none;">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span id="error-content"></span>
+        </div>
+
+        <h4 class="section-title">
+            <i class="bi bi-gear-fill"></i>基本配置
+        </h4>
+        <form id="configForm">
+            <div class="mb-3">
+                <label for="webhook_url" class="form-label">飞书Webhook地址</label>
+                <div class="input-group">
+                    <input type="url" class="form-control" id="webhook_url" placeholder="https://open.feishu.cn/open-apis/bot/v2/hook/..." required>
+                    <span class="input-group-text tooltip-icon" data-bs-toggle="tooltip" title="飞书群组机器人的Webhook地址">
+                        <i class="bi bi-info-circle"></i>
+                    </span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="interval" class="form-label">推送间隔（分钟）</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="interval" min="1" value="60" required>
+                    <span class="input-group-text tooltip-icon" data-bs-toggle="tooltip" title="每隔多少分钟检查一次RSS更新">
+                        <i class="bi bi-info-circle"></i>
+                    </span>
+                </div>
+            </div>
+        </form>
+
+        <h4 class="section-title">
+            <i class="bi bi-rss-fill"></i>RSS源管理
+        </h4>
+        <div id="sources-container">
+            <!-- RSS源会动态添加到这里 -->
+        </div>
+
+        <div class="source-actions">
+            <button class="btn btn-primary" id="addSourceBtn">
+                <i class="bi bi-plus-circle me-1"></i>添加RSS源
+            </button>
+        </div>
+
+        <!-- 添加RSS源对话框 -->
+        <div class="modal fade" id="sourceModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="sourceModalTitle">添加RSS源</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="sourceForm">
+                            <input type="hidden" id="source_id">
+                            <div class="mb-3">
+                                <label for="source_name" class="form-label">源名称</label>
+                                <input type="text" class="form-control" id="source_name" placeholder="例如：TechCrunch" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="source_url" class="form-label">RSS地址</label>
+                                <input type="url" class="form-control" id="source_url" placeholder="https://example.com/feed.xml" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" id="saveSourceBtn">
+                            <i class="bi bi-check2 me-1"></i>保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="save-config-container d-grid gap-2">
+            <button class="btn btn-primary save-config-btn" id="saveConfigBtn">
+                <i class="bi bi-play-circle me-1"></i>保存并启动服务
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('configForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // 全局变量保存配置和源
+        let config = {
+            webhook_url: '',
+            interval: 60,
+            sources: []
+        };
+        let sourceModal;
+        let tooltips = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化Bootstrap模态框和提示框
+            sourceModal = new bootstrap.Modal(document.getElementById('sourceModal'));
             
-            const payload = {
-                rss_url: document.getElementById('rss_url').value,
-                interval: document.getElementById('interval').value,
-                webhook_url: document.getElementById('webhook_url').value
+            // 初始化所有工具提示
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(element => {
+                tooltips.push(new bootstrap.Tooltip(element));
+            });
+            
+            // 加载当前配置
+            loadConfig();
+            
+            // 绑定添加源按钮事件
+            document.getElementById('addSourceBtn').addEventListener('click', () => {
+                // 清空表单
+                document.getElementById('source_id').value = '';
+                document.getElementById('source_name').value = '';
+                document.getElementById('source_url').value = '';
+                document.getElementById('sourceModalTitle').textContent = '添加RSS源';
+                sourceModal.show();
+            });
+            
+            // 绑定保存源按钮事件
+            document.getElementById('saveSourceBtn').addEventListener('click', saveSource);
+            
+            // 绑定保存配置按钮事件
+            document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
+        });
+
+        // 加载配置
+        async function loadConfig() {
+            try {
+                showLoading(true);
+                const response = await fetch('/config');
+                if (response.ok) {
+                    config = await response.json();
+                    // 填充表单
+                    document.getElementById('webhook_url').value = config.webhook_url || '';
+                    document.getElementById('interval').value = config.interval || 60;
+                    // 渲染RSS源
+                    renderSources();
+                }
+            } catch (error) {
+                console.error('加载配置失败:', error);
+                showError('加载配置失败，请刷新页面重试');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 显示/隐藏加载状态
+        function showLoading(show) {
+            // 这里可以实现加载指示器，比如在按钮上显示
+            document.getElementById('saveConfigBtn').disabled = show;
+            if (show) {
+                document.getElementById('saveConfigBtn').innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>加载中...';
+            } else {
+                document.getElementById('saveConfigBtn').innerHTML = '<i class="bi bi-play-circle me-1"></i>保存并启动服务';
+            }
+        }
+
+        // 渲染RSS源列表
+        function renderSources() {
+            const container = document.getElementById('sources-container');
+            container.innerHTML = '';
+
+            if (!config.sources || config.sources.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-rss"></i>
+                        <p>暂无RSS源，请点击下方按钮添加</p>
+                    </div>`;
+                return;
+            }
+
+            config.sources.forEach(source => {
+                const div = document.createElement('div');
+                div.className = 'source-item';
+                div.dataset.id = source.id;
+                div.innerHTML = `
+                    <span class="delete-btn" data-id="${source.id}" title="删除此源">
+                        <i class="bi bi-x-circle"></i>
+                    </span>
+                    <h5><i class="bi bi-rss me-2"></i>${source.name}</h5>
+                    <div class="text-muted text-break">${source.url}</div>
+                    <div class="btn-action-container">
+                        <button class="btn btn-sm btn-outline-primary edit-btn" data-id="${source.id}">
+                            <i class="bi bi-pencil-square me-1"></i>编辑
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            // 绑定删除按钮事件
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const sourceId = e.currentTarget.dataset.id;
+                    deleteSource(sourceId);
+                });
+            });
+
+            // 绑定编辑按钮事件
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const sourceId = e.currentTarget.dataset.id;
+                    editSource(sourceId);
+                });
+            });
+        }
+
+        // 编辑源
+        function editSource(sourceId) {
+            const source = config.sources.find(s => s.id === sourceId);
+            if (source) {
+                document.getElementById('source_id').value = source.id;
+                document.getElementById('source_name').value = source.name;
+                document.getElementById('source_url').value = source.url;
+                document.getElementById('sourceModalTitle').textContent = '编辑RSS源';
+                sourceModal.show();
+            }
+        }
+
+        // 保存源
+        async function saveSource() {
+            const sourceId = document.getElementById('source_id').value;
+            const name = document.getElementById('source_name').value.trim();
+            const url = document.getElementById('source_url').value.trim();
+
+            if (!name || !url) {
+                showError('请填写完整的RSS源信息');
+                return;
+            }
+
+            const newSource = {
+                name,
+                url
             };
 
+            if (sourceId) {
+                newSource.id = sourceId;
+            }
+
             try {
+                const saveBtn = document.getElementById('saveSourceBtn');
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>保存中...';
+                
+                const response = await fetch('/sources', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newSource)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // 更新本地配置
+                    if (sourceId) {
+                        // 更新
+                        const index = config.sources.findIndex(s => s.id === sourceId);
+                        if (index !== -1) {
+                            config.sources[index] = result.source;
+                        }
+                    } else {
+                        // 新增
+                        config.sources.push(result.source);
+                    }
+                    
+                    renderSources();
+                    sourceModal.hide();
+                    showMessage('RSS源保存成功');
+                } else {
+                    const error = await response.json();
+                    showError(`保存失败: ${error.error || '未知错误'}`);
+                }
+            } catch (error) {
+                console.error('保存RSS源出错:', error);
+                showError('网络请求失败，请重试');
+            } finally {
+                const saveBtn = document.getElementById('saveSourceBtn');
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="bi bi-check2 me-1"></i>保存';
+            }
+        }
+
+        // 删除源
+        async function deleteSource(sourceId) {
+            if (!confirm('确定要删除这个RSS源吗？')) {
+                return;
+            }
+
+            try {
+                const sourceItem = document.querySelector(`.source-item[data-id="${sourceId}"]`);
+                if (sourceItem) {
+                    sourceItem.style.opacity = '0.5';
+                }
+                
+                const response = await fetch(`/sources/${sourceId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    // 更新本地配置
+                    config.sources = config.sources.filter(s => s.id !== sourceId);
+                    renderSources();
+                    showMessage('RSS源删除成功');
+                } else {
+                    const error = await response.json();
+                    showError(`删除失败: ${error.error || '未知错误'}`);
+                    if (sourceItem) {
+                        sourceItem.style.opacity = '1';
+                    }
+                }
+            } catch (error) {
+                console.error('删除RSS源出错:', error);
+                showError('网络请求失败，请重试');
+                const sourceItem = document.querySelector(`.source-item[data-id="${sourceId}"]`);
+                if (sourceItem) {
+                    sourceItem.style.opacity = '1';
+                }
+            }
+        }
+
+        // 保存整体配置
+        async function saveConfig() {
+            const webhookUrl = document.getElementById('webhook_url').value.trim();
+            const interval = document.getElementById('interval').value;
+
+            if (!webhookUrl) {
+                showError('请填写飞书Webhook地址');
+                document.getElementById('webhook_url').focus();
+                return;
+            }
+
+            if (!config.sources || !config.sources.length) {
+                showError('请至少添加一个RSS源');
+                document.getElementById('addSourceBtn').classList.add('btn-pulse');
+                setTimeout(() => {
+                    document.getElementById('addSourceBtn').classList.remove('btn-pulse');
+                }, 2000);
+                return;
+            }
+
+            config.webhook_url = webhookUrl;
+            config.interval = parseInt(interval);
+
+            try {
+                showLoading(true);
                 const response = await fetch('/config', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(config)
                 });
 
-                const result = await response.json();
-                const messageEl = document.getElementById('message');
-                
                 if (response.ok) {
-                    messageEl.className = 'success';
-                    messageEl.textContent = `配置成功：${result.message}`;
+                    const result = await response.json();
+                    showMessage(result.message || '配置已保存，服务已启动');
                 } else {
-                    messageEl.className = 'error';
-                    messageEl.textContent = `错误：${result.error || '未知错误'}`;
+                    const error = await response.json();
+                    showError(`保存失败: ${error.error || '未知错误'}`);
                 }
-                messageEl.style.display = 'block';
             } catch (error) {
-                console.error('Error:', error);
-                const messageEl = document.getElementById('message');
-                messageEl.className = 'error';
-                messageEl.textContent = '网络请求失败，请检查服务器状态';
-                messageEl.style.display = 'block';
+                console.error('保存配置出错:', error);
+                showError('网络请求失败，请检查服务器状态');
+            } finally {
+                showLoading(false);
             }
-        });
+        }
+
+        // 显示成功消息
+        function showMessage(message) {
+            const messageEl = document.getElementById('message');
+            const messageContent = document.getElementById('message-content');
+            messageContent.textContent = message;
+            messageEl.style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            
+            setTimeout(() => {
+                messageEl.style.opacity = '0';
+                setTimeout(() => {
+                    messageEl.style.display = 'none';
+                    messageEl.style.opacity = '1';
+                }, 300);
+            }, 4000);
+        }
+
+        // 显示错误消息
+        function showError(message) {
+            const errorEl = document.getElementById('error');
+            const errorContent = document.getElementById('error-content');
+            errorContent.textContent = message;
+            errorEl.style.display = 'block';
+            document.getElementById('message').style.display = 'none';
+            
+            setTimeout(() => {
+                errorEl.style.opacity = '0';
+                setTimeout(() => {
+                    errorEl.style.display = 'none';
+                    errorEl.style.opacity = '1';
+                }, 300);
+            }, 5000);
+        }
     </script>
 </body>
 </html>

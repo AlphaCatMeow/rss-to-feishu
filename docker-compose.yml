@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  rss-to-feishu:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: rss-to-feishu
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./config.json:/app/config.json
+      - ./sent_entries.json:/app/sent_entries.json
+      - ./rss_feishu.log:/app/rss_feishu.log
+    restart: unless-stopped
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s 
